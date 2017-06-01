@@ -33,7 +33,7 @@ def decision_step(Rover):
                     Rover.throttle = 0
                 Rover.brake = 0
                 # Set steering to average angle clipped to the range +/- 15
-                Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -10, 15)
+                Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -5, 15)
             # If there's a lack of navigable terrain pixels then go to 'stop' mode
             elif len(Rover.nav_angles) < Rover.stop_forward:
                 Rover = full_stop(Rover)
@@ -61,19 +61,20 @@ def decision_step(Rover):
                     # Release the brake
                     Rover.brake = 0
                     # Set steer to mean angle
-                    Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
+                    Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -10, 15)
                     Rover.mode = 'forward'
+
         if Rover.near_sample:
             Rover = full_stop(Rover)
-            Rover.send_pickup = True
-            # Set throttle back to stored value
-            Rover.throttle = Rover.throttle_set
-            # Release the brake
-            Rover.brake = 0
-            # Set steer to mean angle
-            Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
-            Rover.mode = 'forward'
-            # Rover.picking_up = 0
+        #     Rover.send_pickup = True
+        #     # # Set throttle back to stored value
+        #     # Rover.throttle = Rover.throttle_set
+        #     # # Release the brake
+        #     # Rover.brake = 0
+        #     # Set steer to mean angle
+        #     # Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
+        #     # Rover.mode = 'forward'
+        #     Rover.picking_up = 0
 
     # Just to make the rover do something
     # even if no modifications have been made to the code
@@ -81,6 +82,12 @@ def decision_step(Rover):
         Rover.throttle = 0
         Rover.steer = 0
         Rover.brake = Rover.brake_set
+
+    # If in a state where want to pickup a rock send pickup command
+    if Rover.near_sample and Rover.vel == 0 and not Rover.picking_up:
+        Rover.send_pickup = True
+        #     # # Release the brake
+        #     # Rover.brake = 0
 
     return Rover
 

@@ -1,6 +1,4 @@
 ## Project: Search and Sample Return
-### Writeup Template: You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
 
@@ -20,45 +18,96 @@
 * Fill in the `decision_step()` function within the `decision.py` script with conditional statements that take into consideration the outputs of the `perception_step()` in deciding how to issue throttle, brake and steering commands. 
 * Iterate on your perception and decision function until your rover does a reasonable (need to define metric) job of navigating and mapping.  
 
-[//]: # (Image References)
-
-[image1]: ./misc/rover_image.jpg
-[image2]: ./calibration_images/example_grid1.jpg
-[image3]: ./calibration_images/example_rock1.jpg 
-
 ## [Rubric](https://review.udacity.com/#!/rubrics/916/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  
-
-You're reading it!
 
 ### Notebook Analysis
-#### 1. Run the functions provided in the notebook on test images (first with the test data provided, next on data you have recorded). Add/modify functions to allow for color selection of obstacles and rock samples.
-Here is an example of how to include an image in your writeup.
 
-![alt text][image1]
+#### 1. Looking into the data
 
-#### 1. Populate the `process_image()` function with the appropriate analysis steps to map pixels identifying navigable terrain, obstacles and rock samples into a worldmap.  Run `process_image()` on your test data using the `moviepy` functions provided to create video output of your result. 
-And another! 
+Images provided by Udacity 
 
-![alt text][image2]
+![Test](misc/test.png)
+
+And one sample from recorded dataset
+
+![Test](misc/rec.png)
+
+#### 2. Reference coordinates
+
+I've used the example grid image above to choose source points for the grid cell in front of the rover (each grid cell is 1 square meter in the simulator). 
+
+The coordinates are the following [14, 140], [301 ,140],[200, 96], [118, 96] (4 points , x & y)
+And looks as following if plotted:
+
+![Test](misc/coords.png)
+
+#### 3. Bird-eye view
+
+Using the coordinates from the above I applied perspective transformation to the image using OpenCV [getPerspectiveTransform](http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#getperspectivetransform) function, and got the following picture:
+
+![Test](misc/bird.png)
+
+You can see the source points that were converted to destination points in red.
+
+#### 4. Path / Obstacles / Rocks selection
+
+In the simulator rocks, obstacles and path are of different color and could be seperated by RGB color thresholding.
+I have put together simple Trackbar using OpenCV that looks like this:
+
+![Test](misc/trackbar.png)
+
+It is possible to set min/max value for RGB channels and the output will be shown in the windows below as soon as you make changes. It was really helpful to define a threshold for rock detection using that.
+
+I ended up with the following parameters for the detection
+
+```
+rock_min_thresh = (155, 0, 0)
+rock_max_thresh = (255, 255, 117)
+path_min_thresh = (120, 120, 120)
+path_max_thresh = (255,255,255)
+obst_min_thresh = (0, 0, 0)
+obst_max_thresh = path_min_thresh (NOT path)
+```
+
+#### 5. Pipeline `process_image()`
+
+After putting it all togethe with the appropriate analysis steps to map pixels identifying navigable terrain, obstacles and rock samples into a worldmap we get the following resultant image:
+
+![Test](misc/pipe.png)
+
+#### 6. Processing video 
+
+Running `process_image()` on test data using the `moviepy` functions provided to create video output ofresult. 
+
+[Video link](output/test_mapping.mp4)
+
 ### Autonomous Navigation and Mapping
 
-#### 1. Fill in the `perception_step()` (at the bottom of the `perception.py` script) and `decision_step()` (in `decision.py`) functions in the autonomous mapping scripts and an explanation is provided in the writeup of how and why these functions were modified as they were.
+#### 1. Perception
 
+Using the same preprocessing and analysis from the pipeline we do process the image from the simulator in real time and return it back to display. All is done in the `perception_step()` (at the bottom of the `perception.py` script).
 
-#### 2. Launching in autonomous mode your rover can navigate and map autonomously.  Explain your results and how you might improve them in your writeup.  
+#### 2. Decision
 
-**Note: running the simulator with different choices of resolution and graphics quality may produce different results, particularly on different machines!  Make a note of your simulator settings (resolution and graphics quality set on launch) and frames per second (FPS output to terminal by `drive_rover.py`) in your writeup when you submit the project so your reviewer can reproduce your results.**
+In `decision_step()` (in `decision.py`) function for autonomous driving I have limited the rover to steer only in range of -5 to 15 degree, which made is steer more to the left side and act like a wall crawler.  
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+#### 3. Launching in autonomous mode rover can navigate and map autonomously. 
 
+Here are the results of one minute drive:
 
+![Test](misc/drive1.png)
 
-![alt text][image3]
+I ran the simulator with settings set as 1280x800 & Fantastic quality and observed the FPS of about 19-25 along the drive.
+
+#### Things to improve / Problems discussion
+
+There is definitely a lot of space to improve as that was the most naive idea to just crawl the walls.
+Instead of color thresholding I would like to train CNN to make a decision of steering the wheel and may be even control the speed.
+
+Pipeline may fail on the small obstacles in the middle of the scene as they are not being processed explicitly and averaging here does a bad job (neglects them). I think CNN will perform much better on that.
+
 
 

@@ -122,6 +122,8 @@ def telemetry(sid, data):
                 send_pickup()
                 # Reset Rover flags
                 Rover.send_pickup = False
+                Rover.picking_up = 0
+
         # In case of invalid telemetry, send null commands
         else:
 

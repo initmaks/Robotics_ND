@@ -10,8 +10,8 @@ def update_rover(Rover, data):
       if Rover.start_time == None:
             Rover.start_time = time.time()
             Rover.total_time = 0
-            samples_xpos = np.int_([np.float(pos.strip()) for pos in data["samples_x"].split(',')])
-            samples_ypos = np.int_([np.float(pos.strip()) for pos in data["samples_y"].split(',')])
+            samples_xpos = np.int_([np.float(pos.strip()) for pos in data["samples_x"].split(';')])
+            samples_ypos = np.int_([np.float(pos.strip()) for pos in data["samples_y"].split(';')])
             Rover.samples_pos = (samples_xpos, samples_ypos)
             Rover.samples_found = np.zeros((len(Rover.samples_pos[0]))).astype(np.int)
       # Or just update elapsed time
@@ -24,7 +24,7 @@ def update_rover(Rover, data):
       # The current speed of the rover in m/s
       Rover.vel = np.float(data["speed"])
       # The current position of the rover
-      Rover.pos = np.fromstring(data["position"], dtype=float, sep=',')
+      Rover.pos = np.fromstring(data["position"], dtype=float, sep=';')
       # The current yaw angle of the rover
       Rover.yaw = np.float(data["yaw"])
       # The current yaw angle of the rover
